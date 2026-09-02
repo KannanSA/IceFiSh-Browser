@@ -80,6 +80,10 @@ enum SearchRouting {
 
         if let url = URL(string: trimmed), let scheme = url.scheme?.lowercased(),
            ["http", "https"].contains(scheme), url.host != nil {
+            if scheme == "http", var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+                components.scheme = "https"
+                return components.url ?? url
+            }
             return url
         }
 
@@ -90,10 +94,23 @@ enum SearchRouting {
     }
 
     static func looksLikeHost(_ value: String) -> Bool {
-        let host = value.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false).first.map(String.init) ?? value
-        guard host.contains("."), !host.hasPrefix(".") , !host.hasSuffix(".") else { return false }
+        let hostPort = value.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: true).first.map(String.init) ?? value
+        guard let host = hostname(from: hostPort) else { return false }
+        guard host.contains("."), !host.hasPrefix("."), !host.hasSuffix(".") else { return false }
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: ".-"))
         return host.unicodeScalars.allSatisfy { allowed.contains($0) }
+    }
+
+    /// Host, or host from `example.com:8080`.
+    static func hostname(from hostPort: String) -> String? {
+        if let colon = hostPort.lastIndex(of: ":") {
+            let portString = hostPort[hostPort.index(after: colon)...]
+            if !portString.isEmpty, portString.allSatisfy(\.isNumber) {
+                guard let port = Int(portString), (1 ... 65535).contains(port) else { return nil }
+                return String(hostPort[..<colon])
+            }
+        }
+        return hostPort
     }
 
     static func displayAddress(for url: URL?) -> String {

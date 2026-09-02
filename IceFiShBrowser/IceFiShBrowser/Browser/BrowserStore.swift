@@ -46,7 +46,6 @@ final class BrowserStore {
     var chipPrompt: ChipPrompt = .none
     var showingTabs = false
     var articles: [TodayArticle] = TodayArticle.fallback
-    var voiceError: String?
     let favorites = FavoriteSite.starter
     let voice = VoiceSearchController()
 
@@ -205,7 +204,6 @@ final class BrowserStore {
         voice.toggle { [weak self] text in
             self?.query = text
         }
-        voiceError = voice.lastError
     }
 
     func reloadOrStop() {

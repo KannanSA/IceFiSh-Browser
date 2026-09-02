@@ -18,7 +18,7 @@ struct HomeView: View {
                 SearchPillView()
                 QuickChipsView()
 
-                if let voiceError = store.voiceError ?? store.voice.lastError {
+                if let voiceError = store.voice.lastError {
                     Text(voiceError)
                         .font(.footnote)
                         .foregroundStyle(IcePalette.deep.opacity(0.8))
